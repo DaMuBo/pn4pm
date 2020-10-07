@@ -5,8 +5,9 @@
 - Author Information
 - Description
 - Classes
-- Objects
-- Other Stuff
+- Usage / Examples
+- Other Stuff / Last Words
+- License Information
 
 # Author Information
 - Name: Daniel Muller
@@ -33,3 +34,6 @@ The package offers the following classes:
 
 If you have some issues with the package or ideas what functionalities could be added,
 feel free to contact me.
+
+# License Information
+This Project is using the MIT License
