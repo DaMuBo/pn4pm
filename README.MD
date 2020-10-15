@@ -1,5 +1,5 @@
 # Welcome to Petrinets 4 Process Mining
-### handling Process Lists with a simple small package V0.0.1
+### handling Process Lists with a simple small package V0.0.3
 
 # Content:
 - Author Information
@@ -34,6 +34,11 @@ The package offers the following classes:
 
 If you have some issues with the package or ideas what functionalities could be added,
 feel free to contact me.
+
+## Changes to Last Version
+- Bug Fix in function cel_out() [0.0.3.1 -> 0.0.3.2]
+- Bug Fix after calling the class Petrinet the second time [0.0.1 -> 0.0.3]
+
 
 # License Information
 This Project is using the MIT License

@@ -37,7 +37,7 @@ class Petrinet:
         self.create_nf()
         self.create_gateways()
         self.integrate_gateways()
-        if not self.transitions: self.create_transitions()
+        self.create_transitions()
         self.create_places()
 
     def create_nf(self):
@@ -140,6 +140,7 @@ class Petrinet:
 
     def create_transitions(self):
         # creating the transition list
+        self.transitions = []
         for c, label in enumerate(self.new_labels):
             self.transitions.append(f"T_{c}")
             if label[5] == -1:
@@ -211,6 +212,14 @@ class Petrinet:
             arc = '''["''' + '''" "'''.join(arclist) + '''"]'''
             newarc = newarc + arc
         newarc = newarc + ''']'''
-        string = f"CONFORMANCE({tablename}, {place}, {transition}, {newarc}, {s_e} )"
+        newlabel = '''['''
+        for t in self.names_transitions:
+            label = '''[\'''' + '''' \"'''.join(t) + '''"]'''
+            newlabel = newlabel + label
+        newlabel = newlabel + ''']'''
+
+        string = f'''CONFORMANCE({tablename}, {place}, {transition}, {newarc}, {newlabel}, {s_e} )'''
         return string
 
+    def pmpy_out(self):
+        return "Output Dummy"
