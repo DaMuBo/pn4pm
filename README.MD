@@ -1,5 +1,5 @@
 # Welcome to Petrinets 4 Process Mining
-### handling Process Lists with a simple small package V0.0.3
+### handling Process Lists with a simple small package V0.0.4
 
 # Content:
 - Author Information
@@ -28,7 +28,21 @@ The package offers the following classes:
   - cel_out([tablename])
   
 # Usage / Examples  
+#### It's very easy to use the package. Just import the package
+#### create your activity list with an activity, position of the activity, all direct previous activity ranges
+#### call the Petrinet function with your list and create your outputs
+from pn4pm_nano import petrinets as pn
 
+list = [['Activity1',0,[-1]],['Activity2',1,[0]],['A....']]
+
+petriobject = pn.Petrinet(list)
+print(petriobject.out())
+print(petriobject.cel_out())
+print(petrionject.cel_out("YourActivityTable"))
+
+#### For silencing the activitys just give an empty string as name
+['',0,[-1]]
+In this case a transition is created but not returned in the frontend
 
 # Other Stuff / Last Words
 
@@ -36,6 +50,7 @@ If you have some issues with the package or ideas what functionalities could be 
 feel free to contact me.
 
 ## Changes to Last Version
+- Added Handling of 'Silent' Activitys and Bug Fix in the cel_out() function [0.0.3.2 -> 0.0.4]
 - Bug Fix in function cel_out() [0.0.3.1 -> 0.0.3.2]
 - Bug Fix after calling the class Petrinet the second time [0.0.1 -> 0.0.3]
 
