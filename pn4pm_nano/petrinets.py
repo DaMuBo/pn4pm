@@ -143,8 +143,8 @@ class Petrinet:
         self.transitions = []
         for c, label in enumerate(self.new_labels):
             self.transitions.append(f"T_{c}")
-            if label[5] == -1:
-                self.names_transitions.append([f"T_{c}", label[0]])
+            if label[5] == -1 and label[0] != "":
+                self.names_transitions.append([label[0], f"T_{c}"])
             if label[5] == -2:
                 self.start_end_transition.append(f"T_{c}")
             label.append(f"T_{c}")
@@ -223,3 +223,4 @@ class Petrinet:
 
     def pmpy_out(self):
         return "Output Dummy"
+
