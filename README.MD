@@ -1,5 +1,5 @@
 # Welcome to Petrinets 4 Process Mining
-### handling Process Lists with a simple small package V0.0.4
+### handling Process Lists with a simple small package V0.0.5
 
 # Content:
 - Author Information
@@ -40,7 +40,7 @@ print(petriobject.out())
 print(petriobject.cel_out())
 print(petrionject.cel_out("YourActivityTable"))
 
-#### For silencing the activitys just give an empty string as name
+#### For silencing the activities just give an empty string as name
 ['',0,[-1]]
 In this case a transition is created but not returned in the frontend
 
@@ -50,6 +50,7 @@ If you have some issues with the package or ideas what functionalities could be 
 feel free to contact me.
 
 ## Changes to Last Version
+- Added the handling of duplicated activities in the petrinet Input [0.0.4 - 0.0.5]
 - Added Handling of 'Silent' Activitys and Bug Fix in the cel_out() function [0.0.3.2 -> 0.0.4]
 - Bug Fix in function cel_out() [0.0.3.1 -> 0.0.3.2]
 - Bug Fix after calling the class Petrinet the second time [0.0.1 -> 0.0.3]

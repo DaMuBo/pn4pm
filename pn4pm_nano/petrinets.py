@@ -1,3 +1,4 @@
+#### Definition of some repeatable functions used from the objects ####
 def check_gateways(check_gtw, all_gtws):
     found = 0
     for gtws in all_gtws:
@@ -33,12 +34,48 @@ class Petrinet:
         self.parall_gateways = parall_gateways
         self.all_gateways = []
         self.new_labels = []
+        self.reduce_duplicates()
         self.create_start_end_events()
         self.create_nf()
         self.create_gateways()
         self.integrate_gateways()
         self.create_transitions()
         self.create_places()
+
+    def reduce_duplicates(self):
+        # find all duplicates in the list and delete them and reconnect it
+        for label in self.labels:
+            if label[0] != "":
+                count = 0
+                for duplicate in self.labels:
+                    print(self.labels)
+                    if label[0] == duplicate[0]:
+                        count += 1
+                        if count > 1:
+                            # replace the connection by the original
+                            if iterable(duplicate[2]) :
+                                for i, dup in duplicate[2]:
+                                    if iterable(label[2]):
+                                        if dup not in label[2]: label[2].append(dup)
+                                    elif label[2] != dup:
+                                        label[2] = [label[2], dup]
+                            else:
+                                if iterable(label[2]):
+                                    if duplicate[2] not in label[2]: label[2].append(duplicate[2])
+                                elif label[2] != duplicate[2]:
+                                    label[2] = [label[2], duplicate[2]]
+                            # now search for all activities which show to the duplicate
+                            for resource in self.labels:
+                                if iterable(resource[2]):
+                                    # append the vg information to the original
+                                    if duplicate[1] in resource[2]:
+                                        for it, res in enumerate(resource[2]):
+                                            if res == duplicate[1]: resource[2][it] = label[1]
+                                elif duplicate[1] == resource[2]:
+                                    resource[2] = label[1]
+                            # drop the duplicate from the lists
+                            self.labels.remove(duplicate)
+
 
     def create_nf(self):
         # find all following activities to each activity
@@ -99,12 +136,15 @@ class Petrinet:
                 # check if an gateway
                 gtw = []
                 if iterable(label[2]):
-                    gtw = [f"inc_gateway_close_{len(self.all_gateways)}", 1, label[2], label[1]]
+                    if len(label[2]) > 1:
+                        print(label)
+                        gtw = [f"inc_gateway_close_{len(self.all_gateways)}", 1, label[2], label[1]]
                 if len(label[3]) > 1:
                     gtw = [f"inc_gateway_open_{len(self.all_gateways)}", 0, label[1], label[3]]
-                gtw.append(len(self.all_gateways))
-                gtw.append(2)
-                self.all_gateways.append(gtw)
+                if len(gtw) > 0:
+                    gtw.append(len(self.all_gateways))
+                    gtw.append(2)
+                    self.all_gateways.append(gtw)
 
     def integrate_gateways(self):
         # put activities and gateways together
@@ -223,4 +263,3 @@ class Petrinet:
 
     def pmpy_out(self):
         return "Output Dummy"
-
