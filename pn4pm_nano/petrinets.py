@@ -34,11 +34,11 @@ class Petrinet:
         self.parall_gateways = parall_gateways
         self.all_gateways = []
         self.new_labels = []
+        self.del_sil_act()
         self.reduce_duplicates()
         self.create_start_end_events()
         self.create_nf()
         self.create_gateways()
-        self.integrate_gateways()
         self.create_transitions()
         self.create_places()
 
@@ -46,15 +46,11 @@ class Petrinet:
         # find all duplicates in the list and delete them and reconnect it
         for label in self.labels:
             if label[0] != "":
-                count = 0
                 for duplicate in self.labels:
-                    print(self.labels)
-                    if label[0] == duplicate[0]:
-                        count += 1
-                        if count > 1:
+                    if label[0] == duplicate[0] and label[1] != duplicate[1]:
                             # replace the connection by the original
-                            if iterable(duplicate[2]) :
-                                for i, dup in duplicate[2]:
+                            if iterable(duplicate[2]):
+                                for dup in duplicate[2]:
                                     if iterable(label[2]):
                                         if dup not in label[2]: label[2].append(dup)
                                     elif label[2] != dup:
@@ -75,6 +71,51 @@ class Petrinet:
                                     resource[2] = label[1]
                             # drop the duplicate from the lists
                             self.labels.remove(duplicate)
+        raenge = []
+        for label in self.labels:
+            raenge.append(label[1])
+        for label in self.labels:
+            if iterable(label[2]):
+                label[2] = [x for x in label[2] if x in raenge]
+                label[2] = list(dict.fromkeys(label[2]))
+                if label[1] == min([row[1] for row in self.labels]):
+                    label[2].append(min([row[1] for row in self.labels]) - 1)
+            else:
+                if label[1] == min([row[1] for row in self.labels]):
+                    label[2] = min([row[1] for row in self.labels]) - 1
+
+    def del_sil_act(self):
+        stopper = False
+        while not stopper:
+            for label in self.labels:
+                # silent activity
+                if label[0] == "":
+                    # go to the following activities
+                    for fa in self.labels:
+                        # connect the previous activity to all following activities
+                        if iterable(fa[2]):
+                            if label[1] in fa[2]:
+                                if iterable(label[2]):
+                                    fa[2].extend(label[2])
+                                    fa[2] = list(dict.fromkeys(fa[2]))
+                                else:
+                                    fa[2].append(label[2])
+                        elif label[1] == fa[2]:
+                            fa[2] = label[2]
+                    # last activity with ""?
+                    if len([x for x in self.labels if x[0] == ""]) <= 1: stopper = True
+                    # delete item
+                    self.labels.remove(label)
+                    # break to restart
+                    break
+        raenge = []
+        for label in self.labels:
+            raenge.append(label[1])
+        for label in self.labels:
+            if iterable(label[2]):
+                label[2] = [x for x in label[2] if x in raenge]
+            if label[1] == min([row[1] for row in self.labels]):
+                label[2] = min([row[1] for row in self.labels]) - 1
 
 
     def create_nf(self):
@@ -82,11 +123,10 @@ class Petrinet:
         for label in self.labels:
             nf = []
             for row in self.labels:
-                try:
-                    for vg in row[2]:
-                        if label[1] == vg:
-                            nf.append(row[1])
-                except:
+                if iterable(row[2]):
+                    if label[1] in row[2]:
+                        nf.append(row[1])
+                else:
                     if label[1] == row[2]:
                         nf.append(row[1])
 
@@ -105,85 +145,48 @@ class Petrinet:
         self.labels.append(['End_Event', maxi + 1, maxi])
 
     def create_gateways(self):
-        # checks if gateways are given. If not search for gatesways and create inclusive gateways for them
-        if self.exc_gateways is not None:
-            self.exc_gateways[:] = [tup for tup in self.exc_gateways if not check_gateways(tup, self.all_gateways)]
-            for gtw in self.exc_gateways:
-                gtw.append(len(self.all_gateways))
-                gtw.append(0)
-                self.all_gateways.append(gtw)
-        if self.parall_gateways is not None:
-            self.parall_gateways[:] = [tup for tup in self.parall_gateways if not check_gateways(tup,
-                                                                                                 self.all_gateways)]
-            for gtw in self.parall_gateways:
-                gtw.append(len(self.all_gateways))
-                gtw.append(1)
-                self.all_gateways.append(gtw)
-        if self.inc_gateways is not None:
-            self.inc_gateways[:] = [tup for tup in self.inc_gateways if not check_gateways(tup, self.all_gateways)]
-            for gtw in self.inc_gateways:
-                gtw.append(len(self.all_gateways))
-                gtw.append(2)
-                self.all_gateways.append(gtw)
-        # check the labels if there are any undefined gateways found and make inc gateways out of it
-        for label in self.labels:
-            found = 0
-            for tup in self.all_gateways:
-                if label[1] in tup[2:4]:
-                    found = 1
-                    break
-            if found == 0 and (iterable(label[2]) or len(label[3]) > 1):
-                # check if an gateway
-                gtw = []
-                if iterable(label[2]):
-                    if len(label[2]) > 1:
-                        print(label)
-                        gtw = [f"inc_gateway_close_{len(self.all_gateways)}", 1, label[2], label[1]]
-                if len(label[3]) > 1:
-                    gtw = [f"inc_gateway_open_{len(self.all_gateways)}", 0, label[1], label[3]]
-                if len(gtw) > 0:
-                    gtw.append(len(self.all_gateways))
-                    gtw.append(2)
-                    self.all_gateways.append(gtw)
-
-    def integrate_gateways(self):
-        # put activities and gateways together
         self.new_labels = self.labels
-        starting_list = [e[2] for e in self.all_gateways if e[1] == 0]
-        ending_list = [e[3] for e in self.all_gateways if e[1] == 1]
-        counter = len(self.new_labels)
-        it = 0
-        for label in self.new_labels:
-            it += 1
-            if it > counter: break
-            if label[1] in starting_list:
-                gname, gtype, gbefore, gafter, gid, gart = [e for e in self.all_gateways if e[2] == label[1]][0]
-                label[3] = [len(self.new_labels) + 1]
-                # add the opener gateway
-                self.new_labels.append([gname, label[3][0], gbefore, gafter, gtype, gart])
-                for l in gafter:
-                    for a in self.new_labels:
-                        if a[1] == l:
-                            a[2] = label[3][0]
-                            break
-            if label[1] in ending_list:
-                # add closing gateways
-                gname, gtype, gbefore, gafter, gid, gart = [e for e in self.all_gateways if e[3] == label[1]][0]
-                label[2] = len(self.new_labels) + 1
-                # add the closing gateway
-                self.new_labels.append([gname, label[2], gbefore, gafter, gtype, gart])
-                for l in gbefore:
-                    for a in self.new_labels:
-                        if a[1] == l:
-                            a[3] = [label[2]]
-                            break
+        ocount = 0
+        # run all activities
+        for act in self.new_labels:
+            if iterable(act[3]):
+                # if its an activity with multiple following activities create a fork gateway
+                if len(act[3]) > 1 and '_gtw_' not in act[0]:
+                    ocount += 1
+                    gtwid = max([row[1] for row in self.labels]) + 1
+                    gateway = [f'fork_gtw_{ocount}', gtwid, act[1], act[3], 0, -1]
+                    self.new_labels.append(gateway)
+                    act[3] = gtwid
+                    # reconnect the old connections
+                    for rep in self.new_labels:
+                        if iterable(rep[2]):
+                            if act[1] in rep[2] and 'fork_gtw_' not in rep[0]:
+                                rep[2] = [gtwid if x == act[1] else x for x in rep[2]]
+
+                        else:
+                            if act[1] == rep[2] and 'fork_gtw_' not in rep[0]:
+                                rep[2] = gtwid
+        # run all activities again
+        ocount = 0
+        for act in self.new_labels:
+            if iterable(act[2]):
+                if len(act[2]) > 1:
+                    for a in act[2]:
+                        ocount += 1
+                        gtwid = max([row[1] for row in self.labels]) + 1
+                        gateway = [f'merge_gtw_{ocount}', gtwid, a, act[1], 1, -1]
+                        self.new_labels.append(gateway)
+                        for rep in self.new_labels:
+                            if rep[1] == a:
+                                rep[3] = [gtwid if x == act[1] else x for x in rep[3]]
+                        act[2] = [gtwid if x == gateway[2] else x for x in act[2]]
 
     def create_transitions(self):
         # creating the transition list
         self.transitions = []
         for c, label in enumerate(self.new_labels):
             self.transitions.append(f"T_{c}")
-            if label[5] == -1 and label[0] != "":
+            if label[5] == -1 and label[4] == -1 and label[0] != "":
                 self.names_transitions.append([label[0], f"T_{c}"])
             if label[5] == -2:
                 self.start_end_transition.append(f"T_{c}")
@@ -192,13 +195,13 @@ class Petrinet:
     def create_places(self):
         temp = []
         a = 0
-
         for key, rf, vg, nf, type, art, label in self.new_labels:
+            # merged points
                 if iterable(vg):
+                    a += 1
                     for fo in vg:
                         for key2, rf2, vg2, nf2, type2, art2, label2 in self.new_labels:
                             if fo == rf2:
-                                a += 1
                                 temp.append([label, label2, f"P_{a}"])
                                 break
                             if rf == min([row[1] for row in self.new_labels]):
@@ -219,11 +222,14 @@ class Petrinet:
         edges = []
         for c, b, place in temp:
             places.append(place)
-            if b != 'NONE':
+            if b != 'NONE' and [b, place] not in edges:
                 edges.append([b, place])
-            edges.append([place, c])
+            if  [place, c] not in edges:
+                edges.append([place, c])
         edges.append([self.start_end_transition[1], f"P_{a + 1}"])
         places.append(f"P_{a + 1}")
+        # drop duplicates
+        places = list(set(places))
         self.places = places
         self.edges = edges
         starter = []
