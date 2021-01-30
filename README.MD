@@ -1,5 +1,5 @@
 # Welcome to Petrinets 4 Process Mining
-### handling Process Lists with a simple small package V0.0.5
+### handling Process Lists with a simple small package V0.0.6.2
 
 # Content:
 - Author Information
@@ -50,6 +50,8 @@ If you have some issues with the package or ideas what functionalities could be 
 feel free to contact me.
 
 ## Changes to Last Version
+- internal fixes and optimization for gateway calculations [0.0.5.3] -> [0.0.6]
+- multiple changes on the calculations - enabled the handling of loops [0.0.5 - 0.0.5.3]
 - Added the handling of duplicated activities in the petrinet Input [0.0.4 - 0.0.5]
 - Added Handling of 'Silent' Activitys and Bug Fix in the cel_out() function [0.0.3.2 -> 0.0.4]
 - Bug Fix in function cel_out() [0.0.3.1 -> 0.0.3.2]

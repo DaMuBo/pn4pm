@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pn4pm_nano", # package name
-    version="0.0.4.1",
+    version="0.0.6.2",
     author="Daniel Muller",
     author_email="daniel.mueller@damu-analytics.com",
     description="A small package for handling process models given as lists with their own row number and the row number of previous activity"
